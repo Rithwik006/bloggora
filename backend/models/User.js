@@ -7,6 +7,11 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  username: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true
+  },
   email: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -15,12 +20,40 @@ const User = sequelize.define('User', {
   password: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  bio: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  avatarUrl: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  isPrivate: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  interests: {
+    type: DataTypes.TEXT,
+    defaultValue: '[]'
   }
 }, {
   hooks: {
     beforeCreate: async (user) => {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(user.password, salt);
+      if (user.email) user.email = user.email.toLowerCase().trim();
+      if (user.username) user.username = user.username.toLowerCase().trim();
+      if (user.password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    },
+    beforeUpdate: async (user) => {
+      if (user.changed('email')) user.email = user.email.toLowerCase().trim();
+      if (user.changed('username')) user.username = user.username.toLowerCase().trim();
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
     }
   }
 });
