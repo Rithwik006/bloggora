@@ -21,11 +21,21 @@ app.use(express.json({ limit: '10mb' }));
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Bloggora API is running' });
 });
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Bloggora API is running' });
+});
 
+// Primary /api routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
+
+// Fallback direct routes to prevent 404 URL mismatch
+app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
+app.use('/posts', postRoutes);
+app.use('/comments', commentRoutes);
 
 const PORT = process.env.PORT || 5000;
 
