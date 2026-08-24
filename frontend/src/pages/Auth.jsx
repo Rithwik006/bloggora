@@ -36,7 +36,13 @@ const Auth = () => {
       login(data);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Authentication failed. Please check your details.');
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.code === 'ERR_NETWORK' || !err.response) {
+        setError('Server connection timeout. The free backend server on Render may be sleeping. Please wait ~30 seconds and try submitting again.');
+      } else {
+        setError(err.message || 'Authentication failed. Please check your details and try again.');
+      }
     } finally {
       setLoading(false);
     }

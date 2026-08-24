@@ -10,8 +10,17 @@ const commentRoutes = require('./routes/commentRoutes');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json({ limit: '10mb' }));
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Bloggora API is running' });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
