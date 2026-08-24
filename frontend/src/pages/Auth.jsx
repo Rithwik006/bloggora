@@ -1,22 +1,30 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import API from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 
 const Auth = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
+
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     username: '',
-    email: '',
+    email: location.state?.email || '',
     password: '',
     bio: '',
     avatarUrl: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useContext(AuthContext);
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.email || location.state?.isSignup) {
+      setIsLogin(false); // Switch to Sign Up if email was pre-filled or signup requested
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +36,7 @@ const Auth = () => {
       login(data);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Authentication failed. Please check your credentials.');
+      setError(err.response?.data?.message || 'Authentication failed. Please check your details.');
     } finally {
       setLoading(false);
     }
@@ -40,16 +48,58 @@ const Auth = () => {
         className="glass-card animate-fade"
         style={{ width: '100%', maxWidth: '460px', padding: '2.5rem 2rem' }}
       >
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div className="logo-icon" style={{ margin: '0 auto 1rem auto', width: '48px', height: '48px', fontSize: '1.4rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+          <div className="nav-logo-badge" style={{ margin: '0 auto 0.8rem auto', width: '48px', height: '48px', fontSize: '1.4rem' }}>
             B
           </div>
           <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>
             {isLogin ? 'Welcome Back to Bloggora' : 'Create Your Account'}
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.4rem' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.3rem' }}>
             {isLogin ? 'Sign in to access your blogs and personalized feed' : 'Join a vibrant community of creators & thinkers'}
           </p>
+        </div>
+
+        {/* Clear Top Mode Tabs: Sign In / Sign Up */}
+        <div
+          style={{
+            display: 'flex',
+            background: '#f1f5f9',
+            borderRadius: 'var(--radius-full)',
+            padding: '0.25rem',
+            marginBottom: '1.75rem'
+          }}
+        >
+          <button
+            type="button"
+            className={`btn btn-sm ${isLogin ? 'btn-primary' : ''}`}
+            onClick={() => { setError(''); setIsLogin(true); }}
+            style={{
+              flex: 1,
+              borderRadius: 'var(--radius-full)',
+              background: isLogin ? 'var(--accent-gradient)' : 'transparent',
+              color: isLogin ? '#fff' : 'var(--text-muted)',
+              border: 'none',
+              boxShadow: isLogin ? 'var(--shadow-sm)' : 'none'
+            }}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm ${!isLogin ? 'btn-primary' : ''}`}
+            onClick={() => { setError(''); setIsLogin(false); }}
+            style={{
+              flex: 1,
+              borderRadius: 'var(--radius-full)',
+              background: !isLogin ? 'var(--accent-gradient)' : 'transparent',
+              color: !isLogin ? '#fff' : 'var(--text-muted)',
+              border: 'none',
+              boxShadow: !isLogin ? 'var(--shadow-sm)' : 'none'
+            }}
+          >
+            Create Account (Sign Up)
+          </button>
         </div>
 
         {error && (
@@ -57,9 +107,9 @@ const Auth = () => {
             style={{
               padding: '0.85rem 1rem',
               borderRadius: 'var(--radius-md)',
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: '#f87171',
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              color: '#ef4444',
               fontSize: '0.88rem',
               marginBottom: '1.5rem',
               textAlign: 'center'
@@ -164,13 +214,13 @@ const Auth = () => {
             type="submit"
             className="btn btn-primary"
             disabled={loading}
-            style={{ width: '100%', padding: '0.9rem', fontSize: '1rem', marginBottom: '1.5rem' }}
+            style={{ width: '100%', padding: '0.9rem', fontSize: '1rem', marginBottom: '1.25rem' }}
           >
             {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', borderTop: '1px solid var(--border-subtle)', pt: '1.2rem' }}>
+        <div style={{ textAlign: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '1.2rem' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
             {isLogin ? "Don't have an account? " : 'Already registered? '}
             <span
@@ -180,7 +230,7 @@ const Auth = () => {
                 setIsLogin(!isLogin);
               }}
             >
-              {isLogin ? 'Sign Up' : 'Sign In'}
+              {isLogin ? 'Create Account' : 'Sign In'}
             </span>
           </p>
         </div>
